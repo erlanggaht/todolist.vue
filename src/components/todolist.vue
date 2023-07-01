@@ -1,9 +1,11 @@
 <script setup>
-import { computed, onMounted, onUpdated, reactive, ref, watch } from 'vue';
-
+import { ReactiveEffect, computed, onMounted, onUpdated, ref } from 'vue';
 
 // Props
-defineProps(['title'])
+let props = defineProps({
+    title: String,
+    alerts : Object
+})
 
 
 // Ref
@@ -12,9 +14,9 @@ let input = ref('')
 let modalShow = ref(false)
 let categories = ref('Anythink')
 
-console.log(namas)
-
 // Method
+
+
 function TambahData() {
     namas.value.push(input.value)
     input.value = ''
@@ -23,7 +25,6 @@ function TambahData() {
 function HapusData(index) {
     namas.value.splice(index, 1)
 }
-
 function ModalShow() {
     modalShow.value = !modalShow.value || false
 }
@@ -31,7 +32,22 @@ function ModalShow() {
 function SaveData(categories) {
     const toJsonData = JSON.stringify(namas._rawValue)
     localStorage.setItem(categories, toJsonData)
+    props.alerts.setAlert(true)
+    setTimeout(()=>{
+        props.alerts.setAlert(false)
+    },1500)
+
 }
+
+function ClearData (categorie) {
+    localStorage.setItem(categorie,JSON.stringify([]))
+    namas.value = []
+}
+
+
+
+
+
 
 
 
@@ -49,7 +65,11 @@ const categorie_select = computed(() => {
     }
 })
 
+
+
 // LifeSycle
+
+
 
 onMounted(() => {
     const getSaveData = JSON.parse(localStorage.getItem('Anythink'))
@@ -65,44 +85,43 @@ onMounted(() => {
     }   else{
         namas.value = getSaveData
     }
-  
+   
 })
-
-
-
-
-
 
 </script>
 
 
 <template>
-    <h1 class="title">{{ title }}</h1>
-
+    <div class="search_area"><input class="search_input" maxlength='30' required placeholder="Search"/></div>
+    <h1 class="title" @click="setter.value = true">{{ props.title }}</h1>
     <form class="form" @submit.prevent="TambahData()">
-       
         <div style="display: flex;justify-content:space-between;padding:2rem">
             <p class="not_data" v-if="namas.length === 0">no assignment yet</p> 
             <div class="btn_abs" v-if="namas.length <= 0">
                 <button type="button" class="buttonSave_abs" @click="SaveData(categories)">Save</button>
             </div>
         </div>
-
-        <p style="text-align: left;padding:0rem 1rem;font-size:1.2rem;font-weight:400" v-if="namas.length > 0"> <span style="font-weight:700">{{categories}}</span> - Sum
-            List: {{ lenghtList }}</p>
-        <ul class="ul" :style="!namas.length > 0 && 'display:inline'">
+        <div style="text-align: left;padding:0rem 1rem;font-size:1.2rem;font-weight:400" v-if="namas.length > 0"> <span style="font-weight:700">{{categories}}</span> - Sum List: {{ lenghtList }}
+        </div>
+        <ul :class="{ul : namas.length}" :style="!namas.length > 0 && 'display:inline'">
             <li class="list" v-for="(nama, index) in namas">
-                <div style="display: flex;align-items:center;gap:10px;text-transform:capitalize"> <span class="square_list"></span> {{ nama }}</div>
+                <div style="display: flex;align-items:center;gap:10px;text-transform:capitalize"> 
+                    <span  class="square_list" ></span> 
+                    <span>{{ nama }}</span>
+                </div>
                 <button type="button" class="deletebutton" @click="HapusData(index)"><img src="../assets/delete.svg"
                         alt="deletebutton" style="width: 28px;height:28px;" /></button>
+                       
             </li>
         </ul>
         <div v-if="namas.length > 0" style="display:flex;justify-content:flex-end;margin:2rem 1rem 3rem 0">
             <button type="button" class="buttonSave" @click="SaveData(categories)">Save</button>
+            <button type="button" class="buttonSave" @click="ClearData(categories)">Clear</button>
+
         </div>
 
         <section class="area-input-submit">
-            <input class="input" maxlength='30' placeholder="Write a new task" v-model="input" />
+            <input class="input" maxlength='30' required placeholder="Write a new task" v-model="input" />
             <button type="button" class="btn_anythink" @click="ModalShow">{{ categories }}  </button>
             <button type="button" class="buttonSubmit" @click="ModalShow"><img src="../assets/menu.svg" alt='menu'
                     style="width:35px;height35px;" /></button>
@@ -120,6 +139,29 @@ onMounted(() => {
 
 
 <style scoped>
+.search_area {
+    width: 100%;
+}
+.search_input {
+    position: absolute;
+    top:-4rem;
+    width: 650px;
+    left:0px;right: 0;
+    border: none;
+    -webkit-box-shadow: -1px 48px 76px -15px rgba(41,39,41,1);
+    -moz-box-shadow: -1px 48px 76px -15px rgba(41,39,41,1);
+    box-shadow: -1px 48px 76px -15px rgba(41,39,41,1);  
+    background-color: #222222;
+    padding: 1rem;
+    border-radius: 2rem;
+    color: #fff;
+}
+
+@media (max-width: 640px) { 
+    .search_input {
+        width: auto;
+    }
+  }
 .title {
     font-size: 3rem;
     font-weight: 700;
@@ -183,6 +225,7 @@ onMounted(() => {
     max-height:360px ;
     overflow: auto;
     scroll-padding-top: 20px;
+    background-color: #292929;
 }
 .list {
     text-transform: capitalize;
@@ -201,7 +244,7 @@ onMounted(() => {
 
 .buttonSave {
     border: none;
-    border-radius: 16px;
+    border-radius: 29px 29px 29px 29px;
     padding: 1rem 1.3rem;
     font-weight: 700;
     outline: none;
@@ -215,6 +258,7 @@ onMounted(() => {
     cursor: pointer;
     font-family: 'Roboto Condensed', sans-serif;
 
+
 }
 
 
@@ -222,6 +266,7 @@ onMounted(() => {
     background-color: transparent;
     border: none;
     outline: none;
+    cursor: pointer;
 }
 
 

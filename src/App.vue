@@ -1,19 +1,31 @@
 <script setup>
 import todolist from './components/todolist.vue'
+import alert from './components/alert.vue';
+import { onUpdated, reactive } from 'vue';
 
+const alerts = reactive({ boolean: false })
+
+function setAlert (bool) {
+  alerts.boolean = bool
+}
+
+onUpdated(()=>{
+})
 </script>
 
 <template>
   
   <main class="main">
   <section class="section">
-    <todolist title="Todo List" />
+    <alert :alerts="alerts" />
+    <todolist title="Todo List" :alerts={setAlert}  />
   </section>
   </main>
 
 </template>
 
 <style scoped>
+
 
 .main {
   margin: 0 0;
@@ -29,7 +41,7 @@ import todolist from './components/todolist.vue'
   background-color: #222;color: #eee;
   box-shadow: 0px 2px 12px 1px #111;
   border-radius: 3rem;
-
+  position: relative;
 }
 
 @media (max-width: 640px) { 
