@@ -14,12 +14,16 @@ let input = ref('')
 let modalShow = ref(false)
 let categories = ref('Anythink')
 
+let search = ref('')
+
 // Method
 
 
 function TambahData() {
     namas.value.push(input.value)
     input.value = ''
+    
+    SaveData(categories.value,false)
 }
 
 function HapusData(index) {
@@ -29,13 +33,16 @@ function ModalShow() {
     modalShow.value = !modalShow.value || false
 }
 
-function SaveData(categories) {
+function SaveData(categories,click) {
     const toJsonData = JSON.stringify(namas._rawValue)
     localStorage.setItem(categories, toJsonData)
-    props.alerts.setAlert(true)
-    setTimeout(()=>{
-        props.alerts.setAlert(false)
-    },1500)
+    
+    if(click){
+        props.alerts.setAlert(true)
+        setTimeout(()=>{
+            props.alerts.setAlert(false)
+        },1500)
+    }else return
 
 }
 
@@ -46,8 +53,30 @@ function ClearData (categorie) {
 
 
 
+function filteredList() {
+  let fruits = JSON.parse(localStorage.getItem('Anythink'))
+  let result = fruits.filter((fruit) =>
+   fruit.toLowerCase().includes(search.value.toLowerCase())
+  ); 
+
+  if(fruits.length <= 0) {
+    return false
+  }else namas.value = result
+
+}
+
+function colorlist () {
 
 
+    switch(categories.value){
+        
+    case 'Favorite Animal' :return 'background-color:#4caf50'
+    case 'Favorite Food' :return 'background-color:#6d52ed'
+    case 'Favorite Movie' :return 'background-color:#cc3035'
+    default : return 'background-color:#808080'
+    }
+
+}
 
 
 
@@ -67,8 +96,8 @@ const categorie_select = computed(() => {
 
 
 
-// LifeSycle
 
+// LifeSycle
 
 
 onMounted(() => {
@@ -92,13 +121,14 @@ onMounted(() => {
 
 
 <template>
-    <div class="search_area"><input class="search_input" maxlength='30' required placeholder="Search"/></div>
-    <h1 class="title" @click="setter.value = true">{{ props.title }}</h1>
+
+   <input class="search_input" maxlength='30' required placeholder="Search - ( Press Enter )"  v-on:keyup.enter="filteredList()"  v-model="search"/>
+    <h1 class="title" >{{ props.title }}</h1>
     <form class="form" @submit.prevent="TambahData()">
         <div style="display: flex;justify-content:space-between;padding:2rem">
             <p class="not_data" v-if="namas.length === 0">no assignment yet</p> 
             <div class="btn_abs" v-if="namas.length <= 0">
-                <button type="button" class="buttonSave_abs" @click="SaveData(categories)">Save</button>
+                <button type="button" class="buttonSave_abs" @click="SaveData(categories,true)">Save</button>
             </div>
         </div>
         <div style="text-align: left;padding:0rem 1rem;font-size:1.2rem;font-weight:400" v-if="namas.length > 0"> <span style="font-weight:700">{{categories}}</span> - Sum List: {{ lenghtList }}
@@ -106,7 +136,7 @@ onMounted(() => {
         <ul :class="{ul : namas.length}" :style="!namas.length > 0 && 'display:inline'">
             <li class="list" v-for="(nama, index) in namas">
                 <div style="display: flex;align-items:center;gap:10px;text-transform:capitalize"> 
-                    <span  class="square_list" ></span> 
+                    <span  class="square_list" :style="colorlist()" ></span> 
                     <span>{{ nama }}</span>
                 </div>
                 <button type="button" class="deletebutton" @click="HapusData(index)"><img src="../assets/delete.svg"
@@ -115,7 +145,7 @@ onMounted(() => {
             </li>
         </ul>
         <div v-if="namas.length > 0" style="display:flex;justify-content:flex-end;margin:2rem 1rem 3rem 0">
-            <button type="button" class="buttonSave" @click="SaveData(categories)">Save</button>
+            <button type="button" class="buttonSave" @click="SaveData(categories,true)">Save</button>
             <button type="button" class="buttonSave" @click="ClearData(categories)">Clear</button>
 
         </div>
@@ -139,35 +169,36 @@ onMounted(() => {
 
 
 <style scoped>
-.search_area {
-    width: 100%;
-}
+
 .search_input {
     position: absolute;
-    top:-4rem;
-    width: 650px;
-    left:0px;right: 0;
+    top:.1rem;
+    width: 600px;
+    left:25px;
     border: none;
+    border-top:none;
     -webkit-box-shadow: -1px 48px 76px -15px rgba(41,39,41,1);
     -moz-box-shadow: -1px 48px 76px -15px rgba(41,39,41,1);
     box-shadow: -1px 48px 76px -15px rgba(41,39,41,1);  
-    background-color: #222222;
+    background-color: #222;
     padding: 1rem;
     border-radius: 2rem;
     color: #fff;
 }
 
-@media (max-width: 640px) { 
-    .search_input {
-        width: auto;
-    }
-  }
+
+.search_input:focus{
+    border-top:none ;
+    border-color: #555;
+    outline: none;
+}
+
 .title {
     font-size: 3rem;
     font-weight: 700;
     text-transform: uppercase;
     text-align: center;
-    margin: 0px;
+    margin: 3rem 0 0 0;
     padding: 2rem 0 0 0;
 }
 
@@ -413,4 +444,57 @@ onMounted(() => {
 
 .modalshow_ul li:active {
     background-color: #ddd;
-}</style>
+}
+
+
+
+
+@media (max-width: 750px) { 
+    .search_input {
+        width: auto;
+    }
+
+    .btn_anythink {
+        position: absolute;
+        right: 110px;
+        bottom: 11px;
+        border: none;
+        outline: none;
+        padding: .4rem;
+        border-radius: .7rem;
+      
+    }
+
+    .input {
+        border: none;
+        padding: 1.2rem 1.2rem;
+        width: 50%;
+        font-size: .7rem;
+    }
+    .buttonSubmit {
+       padding: 0rem .5rem;
+    }
+    .buttonSave_abs,.buttonSave{
+        padding: .7rem .8rem;
+    }
+    .search_input {
+        width: 250px;
+        
+    }
+  }
+
+  @media (max-width: 750px) and  (min-width: 420px) {
+    .btn_anythink {
+        position: absolute;
+        right: 190px;
+        bottom: 11px;
+        border: none;
+        outline: none;
+        padding: .4rem;
+        border-radius: .7rem;
+      
+    }
+
+  }
+
+</style>

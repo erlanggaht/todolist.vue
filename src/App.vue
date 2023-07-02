@@ -45,6 +45,10 @@ onUpdated(()=>{
 }
 
 @media (max-width: 640px) { 
+
+  .main {
+    margin:1rem
+  }
   .section {
     width: 100%;
   }
